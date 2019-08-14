@@ -1,0 +1,86 @@
+---
+title: "Developing Data Products Course Project"
+author: "Danna Ashley J. Mayo"
+date: "August 14, 2019 - Wednesday"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+## Introduction
+A shiny application is created and deployed to shinyapp.io and here you will see the code behind it for reproducibility, and the necessary sources needed about the application. 
+
+- K-means clustering under shiny
+- Dataset used, "xclara" (from the R package "cluster")
+
+## Code in ui.R
+```{r cars, echo = TRUE}
+library(shiny)
+library(cluster)
+data(xclara)
+xclara <- xclara
+names(xclara) <- c("x","y")
+# Define UI for application that draws a histogram
+shinyUI(fluidPage(
+  # Application title
+  titlePanel("K-means Clustering Centroid Coordinates Calculator"),
+  h3("Welcome!"),
+  HTML("<b> Instructions: </b> <br>"),
+  HTML("This shiny application aims to calculate for the centroid coordinates depending on the number of clusters that you have selected. You will also see the clusters plotted on the right side of this side bar. <br> <br>"),
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+       numericInput("clusters",
+                   "Number of clusters",
+                   min = 1,
+                   max = 15,
+                   value = 1),
+                   HTML("*Note that you can only choose from clusters 1-15 <br>")),
+    # Show a plot of the generated distribution
+    mainPanel(
+       plotOutput("clusplot"),
+       HTML("<b>Calculated K-Means Cluster Centroid Coordinates</b>"),
+       tableOutput("coords")
+    )
+  )
+))
+```
+
+## Code in server.R
+```{r, echo = TRUE}
+library(shiny)
+library(cluster)
+library(datasets)
+data(xclara)
+xclara <- xclara
+names(xclara) <- c("x","y")
+# Define server logic required to draw a histogram
+shinyServer(function(input, output, session) {
+  clusters <- reactive({
+    kmeans(xclara, input$clusters, iter.max = 10)
+  })
+  output$clusplot <- renderPlot({
+    palette(c("#C9B1FF", "#FFCAF2", "#FFB2B1", "#FFF3AD",
+              "#BCFFBC", "#A2EDFF", "#5B41C1", "#51535A", "#5893E0", "#003366", "#58E55C", "#FCF04E", "#B20710", "#d695ef", "#ff42c1"))
+    par(mar = c(5.1, 4.1, 0, 1))
+    plot(xclara, col = clusters()$cluster, pch = 1, cex = 1)
+    points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
+  })
+  output$coords <- renderTable({clusters()$centers})
+  })
+```
+
+## Shiny App Screenshot 
+```{r, echo = FALSE}
+library(png)
+library(grid)
+ss <- readPNG("shinyss.PNG")
+grid.raster(ss)
+```
+
+<font size = "4"> **Sources** </font> 
+<font size = "1"> Shiny App: https://dajmayo.shinyapps.io/DDPWeek4/ 
+</font> 
+<font size = "1"> Github: https://github.com/dajmayo/Developing-Data-Products-Course-Project </font> 
+<font size = "1"> Dataset: https://www.rdocumentation.org/packages/cluster/versions/2.0.6/topics/xclara </font>
